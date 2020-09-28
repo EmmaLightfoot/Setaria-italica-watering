@@ -1,0 +1,475 @@
+---
+title: "Lightfoot et al"
+author: "Emma Lightfoot"
+date: "18/07/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+## R Markdown
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+Load required packages
+```{r}
+library(readr)
+library(ggplot2)
+library(ggpubr)
+library(car)
+library(PMCMR)
+```
+
+Load data file:
+Save/export SI file as a .csv called "SI 2" to the same folder as this file and rename it "Data".
+
+Open the file, and replace column title "Watering regime" with "Watering_regime"
+Replace column title "Water (ml)" with "Water_ml"
+Check that the other column headings are in the form: d13Cleaf (rather than having delta signs, superscript and subscript)
+
+Then load datafile into R:
+```{r}
+Data <- read_csv("Data.csv")
+```
+
+Create a data table ('lines') that just includes the experimental lines
+```{r}
+Lines <- subset(Data, Plant !="CONTROL_SIT0555" & Plant != "CONTROL_SIT0560")
+```
+
+Create a data table ('Grain') that only has plants that have grain for all watering regimes
+```{r}
+Grain <- subset (Data, Plant != "SIT0038" & Plant != "SIT0040" & Plant != "SIT0150" & Plant != "SIT0164" & Plant != "SIT0248" & Plant != "SIT0586" & Plant != "CONTROL_SIT0555" & Plant != "CONTROL_SIT0560")
+```
+
+
+# TABLES
+
+Table 1
+```{r}
+Table_1<-data.frame(
+  aggregate(d13Cleaf~Plant,data=Data,FUN=length),
+  aggregate(d13Cleaf~Plant,data=Data,FUN=mean),
+  aggregate(d13Cleaf~Plant,data=Data,FUN=sd),
+  aggregate(d13Cleaf~Plant,data=Data,FUN=IQR),
+  aggregate(d13Cleaf~Plant,data=Data,FUN=min),
+  aggregate(d13Cleaf~Plant,data=Data,FUN=max),
+  aggregate(d13Cleaf~Plant,data=Data,FUN=function(x){abs(min(x)-max(x))}))
+Table_1 <- Table_1[,c(1,2,4,6,8,10,12,14)]
+colnames(Table_1) <- c("Line", "n", "Mean", "Standard Deviation", "IQR", "Minimum", "Maximum", "Range")
+Table_1
+Table_1$Line<-as.character(Table_1$Line)
+Table_1<-rbind( 
+c("","","d13Cleaf (‰)","","","","",""),
+names(Table_1),
+Table_1)
+Table_1
+write.table(Table_1, file="Table 1.csv", col.names = FALSE, row.names = FALSE, sep=",")
+```
+
+Table 2
+```{r}
+Table_2<-data.frame(
+  aggregate(d13Cleaf~Watering_regime,data=Data,FUN=length),
+  aggregate(d13Cleaf~Watering_regime,data=Data,FUN=mean),
+  aggregate(d13Cleaf~Watering_regime,data=Data,FUN=sd),
+  aggregate(d13Cleaf~Watering_regime,data=Data,FUN=IQR),
+  aggregate(d13Cleaf~Watering_regime,data=Data,FUN=min),
+  aggregate(d13Cleaf~Watering_regime,data=Data,FUN=max),
+  aggregate(d13Cleaf~Watering_regime,data=Data,FUN=function(x){abs(min(x)-max(x))}))
+Table_2 <- Table_2[,c(1,2,4,6,8,10,12, 14)]
+colnames(Table_2) <- c("Watering Regime", "n", "Mean", "Standard Deviation", "IQR", "Minimum", "Maximum", "Range")
+Table_2
+Table_2$'Watering Regime'<-as.character(Table_2$'Watering Regime')
+Table_2<-rbind( 
+  c("","","d13Cleaf (‰)","","","","",""),
+  names(Table_2),
+  Table_2)
+Table_2
+write.table(Table_2, file="Table 2.csv", col.names = FALSE, row.names = FALSE, sep=",")
+```
+
+Table 3
+```{r}
+Table_3<-data.frame(
+  aggregate(d13Cgrain~Plant,data=Data,FUN=length),
+  aggregate(d13Cgrain~Plant,data=Data,FUN=mean),
+  aggregate(d13Cgrain~Plant,data=Data,FUN=sd),
+  aggregate(d13Cgrain~Plant,data=Data,FUN=IQR),
+  aggregate(d13Cgrain~Plant,data=Data,FUN=min),
+  aggregate(d13Cgrain~Plant,data=Data,FUN=max),
+  aggregate(d13Cgrain~Plant,data=Data,FUN=function(x){abs(min(x)-max(x))}))
+Table_3 <- Table_3[,c(1,2,4,6,8,10,12,14)]
+colnames(Table_3) <- c("Line", "n", "Mean", "Standard Deviation", "IQR", "Minimum", "Maximum", "Range")
+Table_3
+Table_3$Line<-as.character(Table_3$Line)
+Table_3<-rbind( 
+  c("","","d13Cgrain (‰)","","","","",""),
+  names(Table_3),
+  Table_3)
+Table_3
+write.table(Table_3, file="Table 3.csv", col.names = FALSE, row.names = FALSE, sep=",")
+```
+
+Table 4
+```{r}
+Table_4<-data.frame(
+  aggregate(d13Cgrain~Watering_regime,data=Data,FUN=length),
+  aggregate(d13Cgrain~Watering_regime,data=Data,FUN=mean),
+  aggregate(d13Cgrain~Watering_regime,data=Data,FUN=sd),
+  aggregate(d13Cgrain~Watering_regime,data=Data,FUN=IQR),
+  aggregate(d13Cgrain~Watering_regime,data=Data,FUN=min),
+  aggregate(d13Cgrain~Watering_regime,data=Data,FUN=max),
+  aggregate(d13Cgrain~Watering_regime,data=Data,FUN=function(x){abs(min(x)-max(x))}))
+Table_4 <- Table_4[,c(1,2,4,6,8,10,12, 14)]
+colnames(Table_4) <- c("Watering Regime", "n", "Mean", "Standard Deviation", "IQR", "Minimum", "Maximum", "Range")
+Table_4
+Table_4$'Watering Regime'<-as.character(Table_4$'Watering Regime')
+Table_4<-rbind( 
+  c("","","d13Cgrain (‰)","","","","",""),
+  names(Table_4),
+  Table_4)
+Table_4
+write.table(Table_4, file="Table 4.csv", col.names = FALSE, row.names = FALSE, sep=",")
+```
+
+Table 5
+```{r}
+Table_5<-data.frame(
+  aggregate(d15Ngrain~Plant,data=Data,FUN=length),
+  aggregate(d15Ngrain~Plant,data=Data,FUN=mean),
+  aggregate(d15Ngrain~Plant,data=Data,FUN=sd),
+  aggregate(d15Ngrain~Plant,data=Data,FUN=IQR),
+  aggregate(d15Ngrain~Plant,data=Data,FUN=min),
+  aggregate(d15Ngrain~Plant,data=Data,FUN=max),
+  aggregate(d15Ngrain~Plant,data=Data,FUN=function(x){abs(min(x)-max(x))}))
+Table_5 <- Table_5[,c(1,2,4,6,8,10,12,14)]
+colnames(Table_5) <- c("Line", "n", "Mean", "Standard Deviation", "IQR", "Minimum", "Maximum", "Range")
+Table_5
+Table_5$Line<-as.character(Table_5$Line)
+Table_5<-rbind( 
+  c("","","d15Ngrain (‰)","","","","",""),
+  names(Table_5),
+  Table_5)
+Table_5
+write.table(Table_5, file="Table 5.csv", col.names = FALSE, row.names = FALSE, sep=",")
+```
+
+Table 6
+```{r}
+Table_6<-data.frame(
+  aggregate(d15Ngrain~Watering_regime,data=Data,FUN=length),
+  aggregate(d15Ngrain~Watering_regime,data=Data,FUN=mean),
+  aggregate(d15Ngrain~Watering_regime,data=Data,FUN=sd),
+  aggregate(d15Ngrain~Watering_regime,data=Data,FUN=IQR),
+  aggregate(d15Ngrain~Watering_regime,data=Data,FUN=min),
+  aggregate(d15Ngrain~Watering_regime,data=Data,FUN=max),
+  aggregate(d15Ngrain~Watering_regime,data=Data,FUN=function(x){abs(min(x)-max(x))}))
+Table_6 <- Table_6[,c(1,2,4,6,8,10,12,14)]
+colnames(Table_6) <- c("Watering Regime", "n", "Mean", "Standard Deviation", "IQR","Minimum", "Maximum", "Range")
+Table_6
+Table_6$'Watering Regime'<-as.character(Table_6$'Watering Regime')
+Table_6<-rbind( 
+  c("","","d15Ngrain (‰)","","","","",""),
+  names(Table_6),
+  Table_6)
+Table_6
+write.table(Table_6, file="Table 6.csv", col.names = FALSE, row.names = FALSE, sep=",", quote=2)
+```
+
+# FIGURES
+
+Figure 1a
+```{r}
+
+Fig1a<- 
+  ggplot(Data, aes(x=Plant, y=d13Cleaf)) + 
+  geom_boxplot() + 
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=0.5) +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  theme(legend.title=element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  scale_y_continuous(name=expression(delta^13*C["leaf"]*" "("\u2030"))) +
+  theme(axis.text.x = element_text(angle=90)) 
+Fig1a
+
+cairo_ps("Figure 1a.eps", family="DejaVu Sans", height=5, width=6)
+Fig1a
+dev.off()
+```
+
+Figure 1b
+```{r}
+Fig1b<- 
+  ggplot(Data, aes(x=Plant, y=d13Cgrain)) + 
+  geom_boxplot() + 
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=0.5) +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  theme(legend.title=element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  scale_y_continuous(name=expression(delta^13*C["grain"]*" "("\u2030"))) +
+  theme(axis.text.x = element_text(angle=90)) +
+  scale_x_discrete(name="Accession", labels=c("Control SIT0555 (n=6)", "Control SIT0560 (n=6)", "SIT0038 (n=3)", "SITO040 (n=0)", "SIT0108 (n=4)", "SIT0150 (n=2)", "SIT0164 (n=3)", "SIT0248 (n=3)", "SIT0555 (n=4)", "SIT0560 (n=4)", "SIT0574 (n=4)", "SIT0586 (n=2)", "SIT0603 (n=4)", "SIT0616 (n=4)"))
+Fig1b
+
+cairo_ps("Figure 1b.eps", family="DejaVu Sans", height=5, width=6)
+Fig1b
+dev.off()
+```
+
+Figure 1c
+```{r}
+Fig1c<-
+  ggplot(Data, aes(x=Plant, y=d15Ngrain)) + 
+  geom_boxplot() + 
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=0.5) +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  theme(legend.title=element_blank()) +
+  theme(axis.title.x = element_blank()) +
+  scale_y_continuous(name=expression(delta^15*N["grain"]*" "("\u2030"))) +
+  theme(axis.text.x = element_text(angle=90)) +
+  scale_x_discrete(name="Accession", labels=c("Control SIT0555 (n=6)", "Control SIT0560 (n=6)", "SIT0038 (n=3)", "SITO040 (n=0)", "SIT0108 (n=4)", "SIT0150 (n=2)", "SIT0164 (n=3)", "SIT0248 (n=3)", "SIT0555 (n=4)", "SIT0560 (n=4)", "SIT0574 (n=4)", "SIT0586 (n=2)", "SIT0603 (n=4)", "SIT0616 (n=4)"))
+Fig1c
+
+cairo_ps("Figure 1c.eps", family="DejaVu Sans", height=5, width=6)
+Fig1c
+dev.off()
+```
+
+Figure 2a
+```{r}
+Fig2a <-
+  ggplot(Lines, aes(x=Watering_regime, y=d13Cleaf)) + 
+  geom_boxplot() + 
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=0.5) +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  theme(legend.title=element_blank()) +
+  scale_y_continuous(name=expression(delta^13*C["leaf"]*" "("\u2030"))) +
+  scale_x_discrete(name="Watering Regime (mL)", labels=c("50 (n=12)", "100 (n=12)", "130 (n=12)", "300 (n=12)"))
+Fig2a
+
+cairo_ps("Figure 2a.eps", family="DejaVu Sans", height=5, width=6)
+Fig2a
+dev.off()
+```
+
+Figure 2b
+```{r}
+Fig2b <-
+  ggplot(Lines, aes(x=Watering_regime, y=d13Cgrain)) + 
+  geom_boxplot() + 
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=0.5) +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  theme(legend.title=element_blank()) +
+  scale_y_continuous(name=expression(delta^13*C["grain"]*" "("\u2030"))) +
+  scale_x_discrete(name="Watering Regime (mL)", labels=c("50 (n=7)", "100 (n=11)", "130 (n=11)", "300 (n=8)"))
+Fig2b
+
+cairo_ps("Figure 2b.eps", family="DejaVu Sans", height=5, width=6)
+Fig2b
+dev.off()
+```
+
+Figure 2c
+```{r}
+Fig2c <-
+  ggplot(na.omit(Data), aes(x=Watering_regime, y=d15Ngrain)) + 
+  geom_boxplot() + 
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=0.5) +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  theme(legend.title=element_blank()) +
+  scale_y_continuous(name=expression(delta^15*N["grain"]*" "("\u2030"))) +
+  scale_x_discrete(name="Watering Regime (mL)", labels=c("50 (n=7)", "100 (n=11)", "130 (n=11)", "300 (n=8)"))
+
+cairo_ps("Figure 2c.eps", family="DejaVu Sans", height=5, width=6)
+Fig2c
+dev.off()
+```
+
+Figure 3a
+```{r}
+Fig3a <-
+  ggplot(Lines, aes(x=Water_ml, y=d13Cleaf)) + 
+  geom_point() + 
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  theme(legend.title=element_blank()) + 
+  scale_y_continuous(name=expression(delta^13*C["leaf"]*" "("\u2030"))) +
+  scale_x_continuous(name="Watering Regime (mL)") +
+  facet_wrap(~Plant)
+Fig3a
+
+cairo_ps("Figure 3a.eps", family="DejaVu Sans", height=5, width=6)
+Fig3a
+dev.off()
+```
+
+Figure 3b
+```{r}
+Fig3b<-
+  ggplot(na.omit(Data), aes(x=Water_ml, y=d13Cgrain)) + 
+  geom_point() + 
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  theme(legend.title=element_blank()) + 
+  scale_y_continuous(name=expression(delta^13*C["grain"]*" "("\u2030"))) +
+  scale_x_continuous(name="Watering Regime (mL)") +
+  facet_wrap(~Plant)
+Fig3b
+
+cairo_ps("Figure 3b.eps", family="DejaVu Sans", height=5, width=6)
+Fig3b
+dev.off()
+```
+
+Figure 3c
+```{r}
+Fig3c<-
+  ggplot(na.omit(Data), aes(x=Water_ml, y=d15Ngrain)) + 
+  geom_point() + 
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  theme(legend.title=element_blank()) + 
+  scale_y_continuous(name=expression(delta^15*N["grain"]*" "("\u2030"))) +
+  scale_x_continuous(name="Watering Regime (mL)") +
+  facet_wrap(~Plant)
+Fig3c
+
+cairo_ps("Figure 3c.eps", family="DejaVu Sans", height=5, width=6)
+Fig3c
+dev.off()
+```
+
+# STATISTICS
+
+Statistical Analysis - d13C leaf
+```{r}
+#Normality tests
+#Histograms
+ggplot(na.omit(Data), aes(x=d13Cleaf)) +
+  geom_histogram(binwidth=0.1) +
+  facet_grid(Watering_regime~.)
+#Shapiro Wilks test
+shapiro.test(subset(Data, Watering_regime %in% c("A"))$d13Cleaf)
+shapiro.test(subset(Data, Watering_regime %in% c("B"))$d13Cleaf)
+shapiro.test(subset(Data, Watering_regime %in% c("C"))$d13Cleaf)
+shapiro.test(subset(Data, Watering_regime %in% c("D"))$d13Cleaf)
+
+#=> regime D not normal => use non-parametric
+
+#Testing difeferences between watering regimes
+#Friedmans test d13Cleaf and watering regime
+friedman.test(d13Cleaf~Watering_regime|Plant, data=Data)
+#Post-hoc tests
+posthoc.friedman.nemenyi.test(d13Cleaf~Watering_regime|Plant, data=Data)
+
+#Test for correlation between d13Cleaf and water
+#Spearmans Rho d13Cleaf and ml
+cor.test( ~ d13Cleaf + Water_ml,
+          data=Data,
+          method = "spearman",
+          continuity = FALSE,
+          conf.level = 0.95)
+
+```
+
+Statistical Analysis - d13C grain
+```{r}
+#Normality tests
+#Histograms
+ggplot(na.omit(Grain), aes(x=d13Cgrain)) +
+  geom_histogram(binwidth=0.1) +
+  facet_grid(Watering_regime~.)
+#Shapiro Wilks test
+shapiro.test(subset(Grain, Watering_regime %in% c("A"))$d13Cgrain)
+shapiro.test(subset(Grain, Watering_regime %in% c("B"))$d13Cgrain)
+shapiro.test(subset(Grain, Watering_regime %in% c("C"))$d13Cgrain)
+shapiro.test(subset(Grain, Watering_regime %in% c("D"))$d13Cgrain)
+#=> all normal
+
+#Sphericity test
+smatrix <-with(Grain, cbind(d13Cgrain[Watering_regime=="A"], d13Cgrain[Watering_regime=="B"], d13Cgrain[Watering_regime=="C"], d13Cgrain[Watering_regime=="D"]))
+model<-lm(smatrix~1)
+design<-factor(c("A", "B", "C", "D"))
+options(contrasts=c("contr.sum", "contr.poly"))
+results<-Anova(model, idata=data.frame(design), idesign=~design, type="III")
+summary(results, multivariate=F)
+#=> condition of sphericity met => use parametric test
+
+#Repeated measures ANOVA d13Cgrain and watering regime
+summary(aov(d13Cgrain ~ Watering_regime + Error(Plant), data=Grain))
+#Post-hoc tests
+pairwise.t.test(Grain$d13Cgrain, Grain$Watering_regime, p.adjust="bonferroni")
+
+#Test for correlation between d13Cgrain and water
+#Spearmans Rho d13Cgrain and ml
+cor.test( ~ d13Cgrain + Water_ml,
+          data=Grain,
+          method = "spearman",
+          continuity = FALSE,
+          conf.level = 0.95)
+```
+
+Statistical Analysis - comparing leaf and grain d13C
+```{r}
+#Normality tests
+#Histograms
+ggplot(na.omit(Lines), aes(x=d13Cgrain)) +
+  geom_histogram(binwidth=0.3) 
+ggplot(na.omit(Lines), aes(x=d13Cleaf)) +
+  geom_histogram(binwidth=0.3) 
+
+#Shapiro wilks test
+shapiro.test(Lines$d13Cleaf)
+shapiro.test(Lines$d13Cgrain)
+
+#Equality of variance
+var.test(Lines$d13Cleaf, Lines$d13Cgrain)
+
+#=> normal and equal variance => parametric test
+#T test
+t.test(Lines$d13Cleaf, Lines$d13Cgrain, var.equal=TRUE)
+```
+
+Statistical Analysis - d15N grain
+```{r}
+#Normality tests 
+ggplot(na.omit(Grain), aes(x=d15Ngrain)) +
+  geom_histogram(binwidth=0.2) +
+  facet_grid(Watering_regime~.)
+
+shapiro.test(subset(Grain, Watering_regime %in% c("A"))$d15Ngrain)
+shapiro.test(subset(Grain, Watering_regime %in% c("B"))$d15Ngrain)
+shapiro.test(subset(Grain, Watering_regime %in% c("C"))$d15Ngrain)
+shapiro.test(subset(Grain, Watering_regime %in% c("D"))$d15Ngrain)
+
+#=> all normal
+
+#Sphericity test
+Nmatrix <-with(Grain, cbind(d15Ngrain[Watering_regime=="A"], d15Ngrain[Watering_regime=="B"], d15Ngrain[Watering_regime=="C"], d15Ngrain[Watering_regime=="D"]))
+model<-lm(Nmatrix~1)
+design<-factor(c("A", "B", "C", "D"))
+options(contrasts=c("contr.sum", "contr.poly"))
+results<-Anova(model, idata=data.frame(design), idesign=~design, type="III")
+summary(results, multivariate=F)
+#=> condition of sphericity met => use parametric test
+
+#Testing differences between watering regimes
+#Repeated measures ANOVA d15Ngrain and watering regime
+summary(aov(d15Ngrain ~ Watering_regime + Error(Plant), data=Grain))
+pairwise.t.test(Grain$d15Ngrain, Grain$Watering_regime, p.adjust="bonferroni")
+
+#Test for correlation between d15Ngrain and water
+#Spearmans Rho d15Ngrain and ml
+cor.test( ~ d15Ngrain + Water_ml,
+          data=Grain,
+          method = "spearman",
+          continuity = FALSE,
+          conf.level = 0.95)
+```
+
